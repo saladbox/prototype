@@ -1,0 +1,206 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SaladBox</title>
+    <link rel="stylesheet" href="css/foundation.css" />
+    <style>
+    body { margin-top: 20px; }
+    li input[type="checkbox"] { margin-bottom: 0 }
+    </style>
+    <script src="js/vendor/modernizr.js"></script>
+  </head>
+  <body>
+    
+    <div class="row">
+      <div class="large-12 columns">
+        <h1>🐬 Custom Order Your Dockerfile</h1>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="large-4 medium-4 columns panel">
+        <form id="config">
+          <div class="row">
+            <div class="large-12 columns">
+              <label>Maintainer</label>
+              <input id="maintainer" type="text" value="SaladBox <admin@saladbox.io>" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="large-12 columns">
+              <label>Base Image</label>
+              <select id="from">
+                <option value="alpine:3.1">Alpine Linux 3.1</option>
+                <option value="alpine:3.0">Alpine Linux 3.0</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="large-12 columns">
+              <label>Process Supervisor</label>
+              <select id="init">
+                <option value="">none</option>
+                <option value="--repository http://dl-3.alpinelinux.org/alpine/edge/testing s6">s6</option>
+                <option value="supervisor">supervisor</option>
+              </select>
+            </div>
+          </div>
+          <div class="row" id="pkg">
+            <div class="large-12 columns">
+              <label>Installed Packages</label>
+              <div class="row large-collapse">
+                <div class="large-6 columns">
+                  <ul class="no-bullet">
+                    <li><input id="bash" type="checkbox"><label for="bash">bash</label></li>
+                    <li><input id="curl" type="checkbox"><label for="curl">curl</label></li>
+                    <li><input id="tar" type="checkbox"><label for="tar">tar</label></li>
+                    <li><input id="wget" type="checkbox"><label for="wget">wget</label></li>
+                    <li><input id="nano" type="checkbox"><label for="nano">nano</label></li>
+                    <li><input id="rsync" type="checkbox"><label for="rsync">rsync</label></li>
+                  </ul>
+                </div>
+                <div class="large-6 columns">
+                  <ul class="no-bullet">
+                    <li><input id="gnupg" type="checkbox"><label for="gnupg">gnupg</label></li>
+                    <li><input id="ca-certificates" type="checkbox"><label for="ca-certificates">ca-certificates</label></li>
+                    <li><input id="python" type="checkbox"><label for="python">python</label></li>
+                    <li><input id="nodejs" type="checkbox"><label for="nodejs">nodejs</label></li>
+                    <li><input id="perl" type="checkbox"><label for="perl">perl</label></li>
+                    <li><input id="php" type="checkbox"><label for="php">php</label></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row" id="service">
+            <div class="large-12 columns">
+              <label>Installed Services</label>
+              <div class="row large-collapse">
+                <div class="large-6 columns">
+                  <ul class="no-bullet">
+                    <li><input id="nginx" type="checkbox"><label for="nginx">nginx</label></li>
+                  </ul>
+                </div>
+                <div class="large-6 columns">
+                  <ul class="no-bullet">
+                    <li><input id="php-fpm" type="checkbox"><label for="php-fpm">php-fpm</label></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row" id="port">
+            <div class="large-12 columns">
+              <label>Exposed Ports</label>
+              <div class="row large-collapse">
+                <div class="large-6 columns">
+                  <ul class="no-bullet">
+                    <li><input id="port80" value="80" type="checkbox"><label for="port80">80</label></li>
+                  </ul>
+                </div>
+                <div class="large-6 columns">
+                  <ul class="no-bullet">
+                    <li><input id="port443" value="443" type="checkbox"><label for="port443">443</label></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="large-12 columns">
+              <label>Entrypoint</label>
+              <input id="entrypoint" type="text" value="" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="large-12 columns">
+              <label>Command</label>
+              <input id="cmd" type="text" value="" />
+            </div>
+          </div>
+        </form>
+      </div>     
+
+      <div class="large-8 medium-8 columns">
+        <form>
+          <div class="row">
+            <div class="large-12 columns">
+              <textarea id="dockerfile" readonly rows="30" style="font-family: Menlo; background-color: white!important; box-shadow: none"></textarea>
+            </div>
+          </div>
+          <div class="row">
+            <div class="large-12 columns">
+              <a href="#" class="small button">Download</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+<script id="template-maintainer" type="text/x-handlebars-template">{{#if value}}MAINTAINER {{value}}{{/if}}</script>
+<script id="template-from" type="text/x-handlebars-template">{{#if value}}FROM {{value}}{{/if}}</script>
+<script id="template-init" type="text/x-handlebars-template">{{#if value}}RUN apk add -U {{value}} \
+ && rm -rf /var/cache/apk/*{{/if}}</script>
+<script id="template-pkg" type="text/x-handlebars-template">{{#if value}}RUN apk add -U {{value}} \
+ && rm -rf /var/cache/apk/*{{/if}}</script>
+<script id="template-port" type="text/x-handlebars-template">{{#if value}}EXPOSE {{value}}{{/if}}</script>
+<script id="template-entrypoint" type="text/x-handlebars-template">{{#if value}}ENTRYPOINT ["{{value}}"]{{/if}}</script>
+<script id="template-cmd" type="text/x-handlebars-template">{{#if value}}CMD ["{{value}}"]{{/if}}</script>
+<script src="js/vendor/jquery.js"></script>
+<script src="js/vendor/handlebars-v3.0.3.js"></script>
+<script src="js/foundation.min.js"></script>
+<script>
+  $(document).foundation();
+  $(document).ready(function () {
+    dockerfile();
+  });
+  templates = {};
+  handlers = {
+    init: function () {
+      if ($("#init").val().match(/s6$/)) {
+        $("#entrypoint").val("/usr/bin/s6-svscan -t0");
+        $("#cmd").val("/service");
+      } 
+      return $("#init").val();
+    },
+    pkg: function () {
+      var values = [];
+      $("#pkg").find("input:checked").each(function () {
+        values.push($(this).attr('id'));
+      });
+      return values.join(' ');
+    },
+    port: function () {
+      var values = [];
+      $("#port").find("input:checked").each(function () {
+        values.push($(this).val());
+      });
+      return values.join(', ');
+    },
+    entrypoint: function () {
+      return $("#entrypoint").val().split(' ').join('", "');
+    },
+    cmd: function () {
+      return $("#cmd").val().split(' ').join('", "');
+    }
+  };
+  $("script[id^=template]").each(function () {
+    element = $(this).attr('id').slice(9);
+    templates[element] = Handlebars.compile($(this).html());
+  });
+  function dockerfile () {
+    output = '';
+    $.each(templates, function (element, template) {
+      output += templates[element]({value: handlers[element] ? handlers[element]() : $("#" + element).val()});
+      output += "\n\n";
+    });
+    $("#dockerfile").html(output);
+  }
+  $("#config").find('input, select').on('change', function () {
+    dockerfile();
+  });
+</script>
+</body>
+</html>
